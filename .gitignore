@@ -1,0 +1,30 @@
+# Entornos virtuales
+venv/
+env/
+.venv/
+
+# Python
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.Python
+
+# Pytest
+.pytest_cache/
+.coverage
+htmlcov/
+
+# IDE
+.idea/
+.vscode/
+*.swp
+*.swo
+
+# Base de datos (si usas SQLite)
+*.db
+*.sqlite
+
+# Configuración local (contraseñas)
+.env
+config.local.py
