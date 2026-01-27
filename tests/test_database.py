@@ -1,4 +1,12 @@
 import sys
+from app.database import (
+    create_tasks,
+    get_all_tasks,
+    get_task_by_id,
+    delete_task,
+    mark_as_completed,
+    update_task
+)
 
 
 sys.path.append('../app')

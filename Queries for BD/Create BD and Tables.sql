@@ -1,4 +1,4 @@
-CREATE TABLE Tasks(
+CREATE TABLE tasks(
 id_tasks INT PRIMARY KEY AUTO_INCREMENT,
 title VARCHAR(100) NOT NULL,
 description VARCHAR(500) NOT NULL,
@@ -7,6 +7,6 @@ due_date DATETIME,
 is_completed BOOLEAN DEFAULT FALSE
 );
 
-SELECT * FROM Tasks;
+SELECT * FROM tasks;
 
-DESCRIBE Tasks;
+DESCRIBE tasks;

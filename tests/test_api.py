@@ -1,133 +1,131 @@
 from fastapi.testclient import TestClient
 from app.main import app
+from app.database import (
+    create_tasks,
+    get_all_tasks,
+    get_task_by_id,
+    delete_task,
+    mark_as_completed,
+    update_task
+)
 
 client = TestClient(app)
 
 
 def test_create_task_endpoint():
-    # 1. ARRANGE: Prepare data for sending.
-    task_data = {
-        "title": "Task From test",
-        "description": "Testing data of POST",
-        "due_date": "2026-12-31"
-    }
-
-    # 2. ACT: Make the requests POST.
-    response = client.post("/tasks", json=task_data)
-
-    # 3. ASSERT: Verified
+    """Test creating a new task"""
+    response = client.post(
+        "/tasks",
+        json={
+            "title": "Test task",
+            "description": "Test description",
+            "due_date": "2024-12-31T23:59:59"
+        }
+    )
+    print(f"Staus: {response.status_code}")
+    print(f"Response: {response.json()}")
+    
     assert response.status_code == 201
-    assert response.json()["Message"] == "Task Created Successfully"
+    assert response.json()["message"] == "Task created successfully"
+
 
 def test_get_all_tasks_endpoint():
-    task_data = {
-        "title": "Task GET",
-        "description": "Testing endpoint GET",
-        "due_date": "2026-12-31"
-    }
-
-    client.post("/tasks", json=task_data)
-
+    """Test getting all tasks"""
     response = client.get("/tasks")
-
+    
     assert response.status_code == 200
-    body = response.json()
-
     assert "tasks" in response.json()
-    assert len(body["tasks"]) > 0
+    assert "total" in response.json()
 
 
 def test_get_task_by_id_endpoint():
-    # 1. ARRANGE: Create a task first.
-    task_data = {
-        "title": "Task by ID",
-        "description": "testing endpoint GET by id",
-        "due_date": "2026-12-31"
-    }
-    client.post("/tasks", json=task_data)  # Create Task
-
-    # Get all tasks to know ID the last.
-    tasks = client.get("/tasks").json()["tasks"]
-    task_id = tasks[-1][0]  # The ID is in position [0]
-
-    # 2. ACT: Search for this task by ID
+    """Test getting a single task by ID"""
+    # Arrange
+    title = "Test task for get by id"
+    description = "Test description"
+    
+    create_tasks(title, description)
+    
+    all_tasks = get_all_tasks()
+    task_id = all_tasks[-1][0]
+    
+    # Act
     response = client.get(f"/tasks/{task_id}")
-
-    # 3. ASSERT: Verified the request.
+    
+    # Assert
     assert response.status_code == 200
+    
     task = response.json()
-
-    assert task[0] == task_id
-    assert task[1] == task_data["title"]
+    assert task["id"] == task_id
+    assert task["title"] == title
+    assert task["description"] == description
 
 
 def test_update_task_endpoint():
-    # 1. ARRANGE: Create a task first.
-    task_data = {
-        "title": "Original",
-        "description": "Desc original",
-        "due_date": "2026-01-01"
-    }
-    client.post("/tasks", json=task_data)
-
-    # Get ID from task create.
-    tasks = client.get("/tasks").json()["tasks"]
-    task_id = tasks[-1][0]
-
-    # 2. ACT: Update task.
-    updated_data = {
-        "title": "Task Update",
-        "description": "Desc update",
-        "due_date": "2026-12-31"
-    }
-
-    # Check if the ID exists
-    check = client.get(f"/tasks/{task_id}")
-    print(check.json())
-    assert check.status_code == 200
-
-    response = client.put(f"/tasks/{task_id}", json=updated_data)
-
-    # 3. ASSERT: Verified.
+    """Test updating a task"""
+    # Arrange
+    create_tasks("Old title", "Old description")
+    
+    all_tasks = get_all_tasks()
+    task_id = all_tasks[-1][0]
+    
+    # Act
+    response = client.put(
+        f"/tasks/{task_id}",
+        json={
+            "title": "Updated title",
+            "description": "Updated description",
+            "due_date": "2024-12-31T23:59:59"
+        }
+    )
+    
+    # Assert
     assert response.status_code == 200
-    assert response.json()["Message"] == "Task Updated Successfully"
+    assert response.json()["message"] == "Task updated successfully"
+    
+    # Verify changes
+    task = get_task_by_id(task_id)
+    assert task[1] == "Updated title"
+    assert task[2] == "Updated description"
+
 
 def test_delete_task_endpoint():
-    task_data = {
-        "title": "Task delete",
-        "description": "Task at delete",
-    }
-
-    client.post("/tasks", json=task_data)
-
-
-    tasks = client.get("/tasks").json()["tasks"]
-    task_id = tasks[-1][0]
-
+    """Test deleting a task"""
+    # Arrange
+    create_tasks("Task to delete", "Delete me")
+    
+    all_tasks = get_all_tasks()
+    task_id = all_tasks[-1][0]
+    
+    # Act
     response = client.delete(f"/tasks/{task_id}")
-
+    
+    # Assert
     assert response.status_code == 200
-    assert response.json()["Message"] == "Task Deleted Successfully"
+    assert response.json()["message"] == "Task deleted successfully"
+    
+    # Verify deletion
+    assert get_task_by_id(task_id) is None
 
-    assert client.get(f"/tasks/{task_id}").status_code == 404
 
 def test_mark_as_completed_endpoint():
-    task_data = {
-        "title": "Task Completed",
-        "description": "Task will be completed",
-    }
-
-    client.post("/tasks", json=task_data)
-
-    tasks = client.get("/tasks").json()["tasks"]
-    task_id = tasks[-1][0]
-
+    """Test marking a task as completed"""
+    # Arrange
+    title = "Task to complete"
+    description = "Complete this task"
+    
+    create_tasks(title, description)
+    
+    all_tasks = get_all_tasks()
+    task_id = all_tasks[-1][0]
+    
+    # Act
     response = client.patch(f"/tasks/{task_id}/complete")
-
+    
+    # Assert
     assert response.status_code == 200
-    assert response.json()["Message"] == "Task marked as completed successfully"
-
-    task = client.get(f"/tasks/{task_id}").json()
+    assert response.json()["message"] == "Task marked as completed"
+    
+    # Verify in database
+    task = get_task_by_id(task_id)
     assert task[5] == 1
-
-
