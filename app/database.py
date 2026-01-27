@@ -1,5 +1,6 @@
 import pymysql
 from .exceptions import DataBaseConnectionError
+import os
 
 def get_connection():
     """
@@ -9,16 +10,29 @@ def get_connection():
             pymsql.Connection: Active database connection
     """
     try:
-        conn = pymysql.connect(
-            host='localhost',
-            port= 3306,
-            user= 'root',
-            passwd= 'admin',
-            db= 'all_tasks_testing_practice'
-        )
+        testing = os.getenv('TESTING', 'false').lower() == 'true'
+
+        if testing:
+            # Use CI/CD or test enviroment variables.
+            conn = pymysql.connect(
+                host=os.getenv('DB_HOST', '127.0.0.1'),
+                port=int(os.getenv('DB_PORT', 3306)),
+                user=os.getenv('DB_USER', 'root'),
+                password=os.getenv('DB_PASSWORD', 'testpassword'),
+                db=os.getenv('DB_NAME', 'all_tasks_testing_practice')
+            )
+        else:
+            # Use local development database.
+            conn = pymysql.connect(
+                host='localhost',
+                port=3306,
+                user='root',
+                password='testpassword', # Your password local.
+                db='all_tasks_testing_practice'
+            )
         return conn
     except pymysql.MySQLError as e:
-        raise DataBaseConnectionError(f"Error connecting to the database: {str(e)}")
+        raise DataBaseConnectionError(f"Failed to connect to the database: {str(e)}")
 def close_connection(connection):
     """
     Close the database connection

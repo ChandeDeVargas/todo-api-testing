@@ -1,5 +1,6 @@
 # TODO API - Task Management System
 
+![Tests](https://github.com/tu-usuario/todo-api-testing/actions/workflows/tests.yml/badge.svg)
 ![FastAPI](https://img.shields.io/badge/FastAPI-009688?style=for-the-badge&logo=fastapi&logoColor=white)
 ![Python](https://img.shields.io/badge/Python-3776AB?style=for-the-badge&logo=python&logoColor=white)
 ![MySQL](https://img.shields.io/badge/MySQL-4479A1?style=for-the-badge&logo=mysql&logoColor=white)
