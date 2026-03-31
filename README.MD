@@ -79,15 +79,17 @@ CREATE TABLE tasks(
 
 5. **Configure database connection:**
 
-   Update `app/database.py` with your MySQL credentials:
-```python
-   conn = pymysql.connect(
-       host='localhost',
-       port=3306,
-       user='your_user',      # Change this
-       passwd='your_password', # Change this
-       db='all_tasks_testing_practice'
-   )
+   Copy the environment template and set your MySQL credentials:
+```bash
+   cp .env.example .env
+```
+   Update `.env` with your credentials:
+```env
+   DB_HOST=127.0.0.1
+   DB_PORT=3306
+   DB_USER=your_user
+   DB_PASSWORD=your_password
+   DB_NAME=all_tasks_testing_practice
 ```
 
 ## ▶️ Running the API

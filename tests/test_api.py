@@ -22,11 +22,10 @@ def test_create_task_endpoint():
             "due_date": "2024-12-31T23:59:59"
         }
     )
-    print(f"Staus: {response.status_code}")
-    print(f"Response: {response.json()}")
     
     assert response.status_code == 201
     assert response.json()["message"] == "Task created successfully"
+    assert "task_id" in response.json()
 
 
 def test_get_all_tasks_endpoint():
@@ -44,10 +43,7 @@ def test_get_task_by_id_endpoint():
     title = "Test task for get by id"
     description = "Test description"
     
-    create_tasks(title, description)
-    
-    all_tasks = get_all_tasks()
-    task_id = all_tasks[-1][0]
+    task_id = create_tasks(title, description)
     
     # Act
     response = client.get(f"/tasks/{task_id}")
@@ -55,19 +51,17 @@ def test_get_task_by_id_endpoint():
     # Assert
     assert response.status_code == 200
     
-    task = response.json()
-    assert task["id"] == task_id
-    assert task["title"] == title
-    assert task["description"] == description
+    # Fetch task dictionary
+    task_response = response.json()["task"]
+    assert task_response["id_tasks"] == task_id
+    assert task_response["title"] == title
+    assert task_response["description"] == description
 
 
 def test_update_task_endpoint():
     """Test updating a task"""
     # Arrange
-    create_tasks("Old title", "Old description")
-    
-    all_tasks = get_all_tasks()
-    task_id = all_tasks[-1][0]
+    task_id = create_tasks("Old title", "Old description")
     
     # Act
     response = client.put(
@@ -83,19 +77,16 @@ def test_update_task_endpoint():
     assert response.status_code == 200
     assert response.json()["message"] == "Task updated successfully"
     
-    # Verify changes
+    # Verify changes directly in database
     task = get_task_by_id(task_id)
-    assert task[1] == "Updated title"
-    assert task[2] == "Updated description"
+    assert task["title"] == "Updated title"
+    assert task["description"] == "Updated description"
 
 
 def test_delete_task_endpoint():
     """Test deleting a task"""
     # Arrange
-    create_tasks("Task to delete", "Delete me")
-    
-    all_tasks = get_all_tasks()
-    task_id = all_tasks[-1][0]
+    task_id = create_tasks("Task to delete", "Delete me")
     
     # Act
     response = client.delete(f"/tasks/{task_id}")
@@ -111,13 +102,7 @@ def test_delete_task_endpoint():
 def test_mark_as_completed_endpoint():
     """Test marking a task as completed"""
     # Arrange
-    title = "Task to complete"
-    description = "Complete this task"
-    
-    create_tasks(title, description)
-    
-    all_tasks = get_all_tasks()
-    task_id = all_tasks[-1][0]
+    task_id = create_tasks("Task to complete", "Complete this task")
     
     # Act
     response = client.patch(f"/tasks/{task_id}/complete")
@@ -128,4 +113,4 @@ def test_mark_as_completed_endpoint():
     
     # Verify in database
     task = get_task_by_id(task_id)
-    assert task[5] == 1
+    assert task["is_completed"] == 1

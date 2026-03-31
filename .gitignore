@@ -27,4 +27,6 @@ htmlcov/
 
 # Configuración local (contraseñas)
 .env
+.env.*
+!.env.example
 config.local.py

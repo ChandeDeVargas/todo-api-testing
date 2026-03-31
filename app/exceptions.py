@@ -2,7 +2,7 @@
 Custom exception for TODO API.
 """
 
-class DataBaseConnectionError(Exception):
+class DatabaseConnectionError(Exception):
     """
     Exception raised when there is an error connecting to the database.
     """
